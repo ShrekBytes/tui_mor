@@ -147,8 +147,6 @@ def upload_file():
                 "result": prediction["result"],
                 "result_type": prediction["result_type"],
                 "confidence": prediction["confidence"],
-                "predicted_class": prediction["predicted_class"],
-                "class_probabilities": prediction["class_probabilities"],
             }
             add_to_history(history_item)
 
@@ -182,83 +180,6 @@ def clear_history():
     session["history"] = []
     session.modified = True
     return jsonify({"success": True})
-
-
-@app.route("/delete_history_item", methods=["POST"])
-def delete_history_item():
-    """Delete a specific history item."""
-    try:
-        data = request.get_json()
-        filename = data.get("filename")
-        timestamp = data.get("timestamp")
-        
-        if not filename or not timestamp:
-            return jsonify({"success": False, "error": "Missing filename or timestamp"})
-        
-        history = get_session_history()
-        updated_history = [
-            item for item in history 
-            if not (item["filename"] == filename and item["timestamp"] == timestamp)
-        ]
-        
-        session["history"] = updated_history
-        session.modified = True
-        
-        return jsonify({"success": True})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
-
-
-@app.route("/get_history_stats", methods=["GET"])
-def get_history_stats():
-    """Get statistics about scan history."""
-    try:
-        history = get_session_history()
-        
-        if not history:
-            return jsonify({
-                "success": True,
-                "stats": {
-                    "total_scans": 0,
-                    "tumor_count": 0,
-                    "healthy_count": 0,
-                    "class_distribution": {},
-                    "avg_confidence": 0,
-                    "recent_activity": []
-                }
-            })
-        
-        # Calculate statistics
-        total_scans = len(history)
-        tumor_count = sum(1 for item in history if item["result_type"] == "tumor")
-        healthy_count = sum(1 for item in history if item["result_type"] == "healthy")
-        
-        # Class distribution
-        class_distribution = {}
-        confidence_sum = 0
-        
-        for item in history:
-            predicted_class = item.get("predicted_class", "unknown")
-            class_distribution[predicted_class] = class_distribution.get(predicted_class, 0) + 1
-            confidence_sum += item.get("confidence", 0)
-        
-        avg_confidence = confidence_sum / total_scans if total_scans > 0 else 0
-        
-        # Recent activity (last 5 scans)
-        recent_activity = history[:5]
-        
-        stats = {
-            "total_scans": total_scans,
-            "tumor_count": tumor_count,
-            "healthy_count": healthy_count,
-            "class_distribution": class_distribution,
-            "avg_confidence": round(avg_confidence, 1),
-            "recent_activity": recent_activity
-        }
-        
-        return jsonify({"success": True, "stats": stats})
-    except Exception as e:
-        return jsonify({"success": False, "error": str(e)})
 
 
 @app.errorhandler(404)

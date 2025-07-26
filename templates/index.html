@@ -1,0 +1,289 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MRI Tumor Classification | AI-Powered Brain Tumor Detection</title>
+    <meta name="description" content="Advanced AI-powered tool for detecting and classifying brain tumors from MRI scans. Supports pituitary, glioma, and meningioma detection.">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header Section -->
+        <header class="header" role="banner">
+            <div class="header-content">
+                <div class="header-title">
+                    <div class="logo">
+                        <i class="fas fa-brain" aria-hidden="true"></i>
+                        <h1>MRI Tumor Classification</h1>
+                    </div>
+                    <p class="subtitle">AI-powered brain tumor detection from MRI scans</p>
+                </div>
+                <div class="classification-types">
+                    <h4>
+                        <i class="fas fa-info-circle" aria-hidden="true"></i>
+                        Classification Types
+                    </h4>
+                    <div class="types-grid" role="list" aria-label="Tumor classification types">
+                        <span class="type-badge pituitary" role="listitem">Pituitary</span>
+                        <span class="type-badge glioma" role="listitem">Glioma</span>
+                        <span class="type-badge meningioma" role="listitem">Meningioma</span>
+                        <span class="type-badge healthy" role="listitem">No Tumor</span>
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <div class="app-layout">
+            <!-- Main Content Area -->
+            <main class="main-content" role="main">
+                <!-- Medical Disclaimer -->
+                <div class="warning-notice" role="alert" aria-live="polite">
+                    <i class="fas fa-exclamation-triangle" aria-hidden="true"></i>
+                    <span>
+                        <strong>Medical Disclaimer:</strong> 
+                        This tool is for educational and research purposes only. 
+                        Not intended for medical diagnosis or clinical decision making.
+                    </span>
+                </div>
+
+                <!-- Upload Section -->
+                <section class="upload-section" id="uploadSection" aria-labelledby="upload-heading">
+                    <h2 id="upload-heading" class="sr-only">Upload MRI Image</h2>
+                    
+                    <div class="upload-area" 
+                         id="uploadArea" 
+                         role="button" 
+                         tabindex="0"
+                         aria-label="Click or drag to upload MRI image"
+                         aria-describedby="upload-instructions">
+                        <div class="upload-content">
+                            <i class="fas fa-cloud-upload-alt upload-icon" aria-hidden="true"></i>
+                            <h3>Upload MRI Image</h3>
+                            <p id="upload-instructions">
+                                Drag & drop an image file or click to browse<br>
+                                <small>Supported formats: JPEG, PNG, GIF, BMP, TIFF (Max 10MB)</small>
+                            </p>
+                            <input type="file" 
+                                   id="fileInput" 
+                                   accept="image/*" 
+                                   hidden 
+                                   aria-describedby="upload-instructions">
+                            <button type="button" class="upload-btn" aria-describedby="upload-instructions">
+                                <i class="fas fa-folder-open" aria-hidden="true"></i>
+                                Choose File
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <!-- File Information Display -->
+                    <div class="file-info" id="fileInfo" style="display: none;" role="region" aria-live="polite">
+                        <div class="file-details">
+                            <i class="fas fa-file-image" aria-hidden="true"></i>
+                            <span id="fileName" class="file-name"></span>
+                        </div>
+                        <div class="action-buttons">
+                            <button type="button" 
+                                    class="check-btn" 
+                                    id="checkBtn"
+                                    aria-describedby="analyze-description">
+                                <i class="fas fa-search" aria-hidden="true"></i>
+                                Analyze Image
+                            </button>
+                            <button type="button" 
+                                    class="reset-btn" 
+                                    id="resetBtn"
+                                    aria-label="Clear selected image">
+                                <i class="fas fa-times" aria-hidden="true"></i>
+                                Clear
+                            </button>
+                        </div>
+                        <div class="progress-bar" 
+                             id="progressBar" 
+                             style="display: none;" 
+                             role="progressbar" 
+                             aria-label="Analysis progress">
+                            <div class="progress-fill"></div>
+                        </div>
+                        <div id="analyze-description" class="sr-only">
+                            Click to start AI analysis of the uploaded MRI image
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Analysis Results Section -->
+                <section class="analysis-results" 
+                         id="analysisResults" 
+                         style="display: none;" 
+                         aria-labelledby="results-heading"
+                         role="region">
+                    <div class="analysis-header">
+                        <h2 id="results-heading">
+                            <i class="fas fa-brain" aria-hidden="true"></i>
+                            Analysis Complete
+                        </h2>
+                        <button type="button" 
+                                class="scan-another-btn" 
+                                id="scanAnotherBtn"
+                                aria-label="Start a new scan">
+                            <i class="fas fa-plus" aria-hidden="true"></i>
+                            New Scan
+                        </button>
+                    </div>
+                    
+                    <div class="result-card">
+                        <div class="image-preview">
+                            <img id="previewImage" 
+                                 src="" 
+                                 alt="Analyzed MRI scan" 
+                                 loading="lazy">
+                        </div>
+                        
+                        <div class="result-content">
+                            <div class="result-header">
+                                <h3 id="resultTitle" aria-live="polite"></h3>
+                                <div class="confidence-badge" 
+                                     id="confidenceBadge" 
+                                     role="status"
+                                     aria-live="polite">
+                                    <span id="confidenceText"></span>
+                                </div>
+                            </div>
+                            
+                            <div class="probability-bars" 
+                                 id="probabilityBars" 
+                                 role="region"
+                                 aria-label="Classification probabilities"
+                                 aria-live="polite">
+                                <!-- Probability bars will be inserted here dynamically -->
+                            </div>
+                        </div>
+                    </div>
+                </section>
+
+                <!-- Project Information -->
+                <aside class="about-project" role="complementary" aria-labelledby="project-info">
+                    <h3 id="project-info" class="sr-only">Project Information</h3>
+                    <div class="project-stats" role="list" aria-label="Project statistics">
+                        <div class="stat-item" role="listitem">
+                            <i class="fas fa-bullseye" aria-hidden="true"></i>
+                            <span>93% Accuracy</span>
+                        </div>
+                        <div class="stat-item" role="listitem">
+                            <i class="fas fa-images" aria-hidden="true"></i>
+                            <span>13,006 Images</span>
+                        </div>
+                        <div class="stat-item" role="listitem">
+                            <i class="fas fa-brain" aria-hidden="true"></i>
+                            <span>VGG16 Model</span>
+                        </div>
+                        <div class="stat-item" role="listitem">
+                            <i class="fab fa-github" aria-hidden="true"></i>
+                            <a href="https://github.com/your-username/tumor-detection" 
+                               target="_blank" 
+                               rel="noopener noreferrer"
+                               aria-label="View source code on GitHub">
+                                GitHub Repository
+                            </a>
+                        </div>
+                    </div>
+                </aside>
+            </main>
+
+            <!-- History Sidebar -->
+            <aside class="history-sidebar" role="complementary" aria-labelledby="history-heading">
+                <div class="history-header">
+                    <h3 id="history-heading">
+                        <i class="fas fa-history" aria-hidden="true"></i>
+                        Recent Scans
+                    </h3>
+                </div>
+                
+                <div class="history-content" 
+                     id="historyContent" 
+                     role="region" 
+                     aria-live="polite"
+                     aria-label="Scan history">
+                    {% if history %}
+                        {% for item in history %}
+                        <div class="history-item" 
+                             role="button" 
+                             tabindex="0"
+                             aria-label="View scan result for {{ item.filename }}"
+                             data-filepath="{{ url_for('static', filename='uploads/' + item.filepath) }}"
+                             data-result="{{ item.result }}"
+                             data-result-type="{{ item.result_type }}"
+                             data-confidence="{{ item.confidence }}"
+                             data-filename="{{ item.filename }}">
+                            <div class="history-image">
+                                <img src="{{ url_for('static', filename='uploads/' + item.filepath) }}" 
+                                     alt="MRI scan: {{ item.filename }}"
+                                     loading="lazy">
+                            </div>
+                            <div class="history-details">
+                                <div class="history-filename" title="{{ item.filename }}">
+                                    {{ item.filename }}
+                                </div>
+                                <div class="history-result {{ item.result_type }}" 
+                                     role="status">
+                                    {{ item.result }}
+                                </div>
+                                <div class="history-meta">
+                                    <time class="history-time" 
+                                          datetime="{{ item.timestamp }}">
+                                        {{ item.timestamp }}
+                                    </time>
+                                    <span class="history-confidence">
+                                        {{ "%.1f"|format(item.confidence) }}% confidence
+                                    </span>
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    {% else %}
+                        <div class="empty-history" role="status">
+                            <i class="fas fa-file-medical" aria-hidden="true"></i>
+                            <p>No recent scans available</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </aside>
+        </div>
+    </div>
+
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" 
+         id="loadingOverlay" 
+         style="display: none;" 
+         role="dialog" 
+         aria-modal="true"
+         aria-labelledby="loading-message">
+        <div class="loading-content">
+            <div class="spinner" role="status" aria-hidden="true"></div>
+            <p id="loading-message">Analyzing MRI scan...</p>
+        </div>
+    </div>
+
+    <!-- Toast Notifications -->
+    <div class="toast" 
+         id="toast" 
+         role="alert" 
+         aria-live="assertive" 
+         aria-atomic="true">
+        <div class="toast-content">
+            <i class="toast-icon" aria-hidden="true"></i>
+            <span class="toast-message"></span>
+        </div>
+    </div>
+
+    <!-- Screen Reader Only Content -->
+    <div class="sr-only">
+        <h1>MRI Tumor Classification Tool</h1>
+        <p>An AI-powered application for detecting and classifying brain tumors from MRI scans.</p>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/script.js') }}"></script>
+</body>
+</html> 

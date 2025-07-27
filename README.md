@@ -37,7 +37,7 @@ Then install dependencies:
 pip install -r requirements.txt
 ```
 
----
+
 
 ## 🚀 Run the App
 
@@ -70,8 +70,6 @@ http://127.0.0.1:5555
 ![Prediction](screenshots/2.png)
 
 ![minimal_prediction](screenshots/3.png)
-
-> You can replace the screenshot paths with your own images in the `screenshots/` folder.
 
 
 ## 📄 License

@@ -2,7 +2,7 @@
 
 A Flask-based web application that uses a trained deep learning model to detect brain tumors from MRI images.
 
-
+---
 
 ## 📁 Folder Structure
 
@@ -11,75 +11,72 @@ A Flask-based web application that uses a trained deep learning model to detect 
 project-root/  
 │  
 ├── static/  
-├── templates/
+├── templates/  
 ├── model.h5 # Trained Keras model (downloaded separately)  
 ├── app.py # Main Flask app  
-├── requirements.txt
-└──
+├── requirements.txt  
+└── README.md
 
 ````
 
+---
 
+## 🚀 Usage Guide
 
-## 🔗 Download the Model
+### 1️⃣ Download the Model
 
-📥 [Download the trained model file (`model.h5`)](https://drive.google.com/file/d/1_KAIOS3zkoMWtj2P1xmB65qUsI2hsqxR/view?usp=sharing)  
+📥 [Download `model.h5`](https://drive.google.com/file/d/1_KAIOS3zkoMWtj2P1xmB65qUsI2hsqxR/view?usp=sharing)  
 Place it in the root directory of the project (same level as `app.py`).
 
+---
 
-
-## 📦 Install Dependencies
-
-Create a virtual environment (recommended):
+### 2️⃣ Create and Activate Virtual Environment
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ````
 
-Then install dependencies:
+---
+
+### 3️⃣ Install Dependencies
 
 ```bash
 pip install -r requirements.txt
 ```
 
+---
 
-
-## 🚀 Run the App
+### 4️⃣ Run the Flask App
 
 ```bash
 python app.py
 ```
 
-Then open your browser and visit:
+Visit the app in your browser:
 
 ```
 http://127.0.0.1:5555
 ```
 
-
+---
 
 ## 🧪 Features
 
-- Upload an MRI image.
+- Upload an MRI image
     
-- Predict tumor type: `glioma`, `meningioma`, `pituitary`, or `no tumor`.
+- Predict tumor type: `glioma`, `meningioma`, `pituitary`, or `no tumor`
     
-- Displays confidence score.
+- Display confidence score
     
-- Shows uploaded image with result overlay.
- 
+- View image with result overlay
+    
 
+---
 
 ## 📸 Screenshots
 
-![main](screenshots/1.png)
-
-![Prediction](screenshots/2.png)
-
-![minimal_prediction](screenshots/3.png)
-
-
+---
 
 ## 📄 License
 

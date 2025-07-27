@@ -2,6 +2,8 @@
 
 A Flask-based web application that uses a trained deep learning model to detect brain tumors from MRI images.
 
+
+
 ## 📁 Folder Structure
 
 ```
@@ -17,10 +19,14 @@ project-root/
 
 ````
 
+
+
 ## 🔗 Download the Model
 
-📥 [Download the trained model file (`model.h5`)](https://your-download-link.com/model.h5)  
+📥 [Download the trained model file (`model.h5`)](https://drive.google.com/file/d/1_KAIOS3zkoMWtj2P1xmB65qUsI2hsqxR/view?usp=sharing)  
 Place it in the root directory of the project (same level as `app.py`).
+
+
 
 ## 📦 Install Dependencies
 
@@ -52,6 +58,7 @@ http://127.0.0.1:5555
 ```
 
 
+
 ## 🧪 Features
 
 - Upload an MRI image.
@@ -61,7 +68,8 @@ http://127.0.0.1:5555
 - Displays confidence score.
     
 - Shows uploaded image with result overlay.
-    
+ 
+
 
 ## 📸 Screenshots
 
@@ -70,6 +78,7 @@ http://127.0.0.1:5555
 ![Prediction](screenshots/2.png)
 
 ![minimal_prediction](screenshots/3.png)
+
 
 
 ## 📄 License

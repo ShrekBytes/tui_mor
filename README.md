@@ -65,17 +65,11 @@ http://127.0.0.1:5555
 
 ## 📸 Screenshots
 
-### 🖼️ Upload Page
+![main](screenshots/1.png)
 
-![Upload Page](screenshots/upload.png)
+![Prediction](screenshots/2.png)
 
-### 🧠 Prediction Result
-
-![Prediction Output](screenshots/result.png)
-
-### 📊 Confidence Display
-
-![Confidence](screenshots/confidence.png)
+![minimal_prediction](screenshots/3.png)
 
 > You can replace the screenshot paths with your own images in the `screenshots/` folder.
 

@@ -1,44 +1,50 @@
+# 🧠 Brain Tumor Detection Web App
 
-````markdown
-# Brain Tumor Detection Web App 🧠
+A Flask-based web application that uses a trained deep learning model to detect brain tumors from MRI images.
 
-A Flask web application that uses a deep learning model to detect brain tumors from MRI images.
+---
+
+## 📁 Folder Structure
+
+```
+
+project-root/  
+│  
+├── static/  
+│ └── style.css
+│  
+├── templates/  
+│ └── index.html 
+│  
+├── model.h5 # Trained Keras model (downloaded separately)  
+├── app.py # Main Flask app  
+├── requirements.txt
+└── README.md
+
+````
 
 ---
 
 ## 🔗 Download the Model
 
-Download the trained `.h5` model file from [this link](https://your-download-link.com/model.h5)  
-Place it in the root directory of the project (same folder as `app.py`).
+📥 [Download the trained model file (`model.h5`)](https://your-download-link.com/model.h5)  
+Place it in the root directory of the project (same level as `app.py`).
 
 ---
 
 ## 📦 Install Dependencies
 
-Make sure you have Python 3.7 or higher installed.
-
-Create a virtual environment (optional but recommended):
+Create a virtual environment (recommended):
 
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
 ````
 
-Then install the dependencies:
+Install dependencies:
 
 ```bash
 pip install -r requirements.txt
-```
-
-> If you don’t have a `requirements.txt`, create one like this:
-
-```txt
-flask
-tensorflow
-keras
-numpy
-matplotlib
-Pillow
 ```
 
 ---
@@ -49,36 +55,28 @@ Pillow
 python app.py
 ```
 
-Open your browser and go to:
-**[http://127.0.0.1:5000](http://127.0.0.1:5555)**
+Then open your browser and visit:
+
+```
+http://127.0.0.1:5555
+```
 
 ---
 
-## 🧪 Features
+## 🔍 Features
 
-* Upload MRI image.
-* Predict tumor type (glioma, meningioma, pituitary, or no tumor).
-* Display confidence score.
-* Visual display of uploaded image and result.
-
----
-
-## 🛠 Technologies
-
-* Flask (backend)
-* TensorFlow / Keras (ML model)
-* HTML/CSS (frontend)
-
+- Upload an MRI image.
+    
+- Predict tumor type: `glioma`, `meningioma`, `pituitary`, or `no tumor`.
+    
+- Displays the confidence score.
+    
+- Shows uploaded image with the prediction overlay.
+    
 ---
 
 ## 📄 License
 
-MIT License.
-Feel free to fork, modify, and use this project.
+This project is licensed under the MIT License.  
+Feel free to fork, modify, and use it for your own purposes.
 
----
-
-```
-
-Let me know if you want to include screenshots, Hugging Face/Drive model hosting, or deploy instructions for Heroku/Render.
-```

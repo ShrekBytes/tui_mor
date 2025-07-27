@@ -2,7 +2,7 @@
 const CONFIG = {
     maxFileSize: 10 * 1024 * 1024, // 10MB
     allowedTypes: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/bmp', 'image/tiff'],
-    toastDuration: 4000,
+    toastDuration: 3000,
     maxHistoryItems: 10
 };
 
@@ -29,13 +29,13 @@ const elements = {
     confidenceBadge: null,
     confidenceText: null,
     probabilityBars: null,
-    loadingOverlay: null,
+
     toast: null,
     scanAnotherBtn: null,
     historyContent: null
 };
 
-// ===== INITIALIZATION =====
+// ===== MAIN APPLICATION CLASS =====
 class TumorDetectionApp {
     constructor() {
         this.init();
@@ -44,18 +44,14 @@ class TumorDetectionApp {
     init() {
         this.cacheElements();
         this.bindEvents();
-        this.initializeEnhancements();
+        this.bindHistoryItems();
     }
 
     cacheElements() {
-        const elementIds = Object.keys(elements);
-        elementIds.forEach(key => {
+        Object.keys(elements).forEach(key => {
             const id = key.charAt(0).toLowerCase() + key.slice(1);
             elements[key] = document.getElementById(id) || document.querySelector(`.${key.replace(/([A-Z])/g, '-$1').toLowerCase()}`);
         });
-        
-        // Handle existing history items
-        this.bindHistoryItems();
     }
 
     bindHistoryItems() {
@@ -90,20 +86,25 @@ class TumorDetectionApp {
         elements.resetBtn?.addEventListener('click', this.resetUpload.bind(this));
         elements.checkBtn?.addEventListener('click', this.handleAnalyzeClick.bind(this));
         elements.scanAnotherBtn?.addEventListener('click', this.scanAnother.bind(this));
-    
-    // Drag and drop events
+
+        // Drag and drop events
         if (elements.uploadArea) {
             elements.uploadArea.addEventListener('dragover', this.handleDragOver.bind(this));
             elements.uploadArea.addEventListener('dragleave', this.handleDragLeave.bind(this));
             elements.uploadArea.addEventListener('drop', this.handleDrop.bind(this));
             elements.uploadArea.addEventListener('click', this.handleUploadAreaClick.bind(this));
+            elements.uploadArea.addEventListener('keydown', (event) => {
+                if (event.key === 'Enter' || event.key === ' ') {
+                    event.preventDefault();
+                    this.handleUploadAreaClick();
+                }
+            });
         }
         
         // Global events
         document.addEventListener('dragover', this.preventDefault);
         document.addEventListener('drop', this.preventDefault);
         document.addEventListener('keydown', this.handleKeyboardShortcuts.bind(this));
-        window.addEventListener('resize', this.handleResize.bind(this));
     }
 
     preventDefault(event) {
@@ -112,28 +113,28 @@ class TumorDetectionApp {
 
     // ===== FILE HANDLING =====
     handleFileSelect(event) {
-    const file = event.target.files[0];
-    if (file) {
+        const file = event.target.files[0];
+        if (file) {
             this.processFile(file);
+        }
     }
-}
 
     handleDragOver(event) {
-    event.preventDefault();
+        event.preventDefault();
         elements.uploadArea?.classList.add('dragover');
-}
+    }
 
     handleDragLeave(event) {
-    event.preventDefault();
+        event.preventDefault();
         elements.uploadArea?.classList.remove('dragover');
-}
+    }
 
     handleDrop(event) {
-    event.preventDefault();
+        event.preventDefault();
         elements.uploadArea?.classList.remove('dragover');
-    
-    const files = event.dataTransfer.files;
-    if (files.length > 0) {
+        
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
             this.processFile(files[0]);
         }
     }
@@ -145,18 +146,18 @@ class TumorDetectionApp {
     }
 
     processFile(file) {
-    // Validate file type
+        // Validate file type
         if (!CONFIG.allowedTypes.includes(file.type)) {
             this.showToast('Please select a valid image file (JPEG, PNG, GIF, BMP, TIFF).', 'error');
-        return;
-    }
-    
+            return;
+        }
+        
         // Validate file size
         if (file.size > CONFIG.maxFileSize) {
             this.showToast('File size must be less than 10MB.', 'error');
-        return;
-    }
-    
+            return;
+        }
+        
         appState.selectedFile = file;
         this.displayFileInfo(file);
     }
@@ -179,9 +180,9 @@ class TumorDetectionApp {
     resetUpload() {
         if (appState.isUploading) {
             this.showToast('Cannot reset while uploading. Please wait...', 'error');
-        return;
-    }
-    
+            return;
+        }
+        
         this.clearState();
         this.resetAPI();
         this.showToast('Image cleared successfully.', 'success');
@@ -195,6 +196,17 @@ class TumorDetectionApp {
             elements.fileInput.value = '';
         }
         
+        // Restore visibility of result header elements
+        if (elements.resultTitle) {
+            elements.resultTitle.style.display = 'block';
+        }
+        if (elements.confidenceText) {
+            elements.confidenceText.style.display = 'inline';
+        }
+        if (elements.confidenceBadge) {
+            elements.confidenceBadge.style.display = 'inline-block';
+        }
+        
         this.toggleDisplay(elements.fileInfo, false);
         this.toggleDisplay(elements.uploadArea, true);
         this.toggleDisplay(elements.analysisResults, false);
@@ -203,7 +215,7 @@ class TumorDetectionApp {
     async resetAPI() {
         try {
             await fetch('/reset', {
-        method: 'POST',
+                method: 'POST',
                 headers: { 'Content-Type': 'application/json' }
             });
         } catch (error) {
@@ -222,25 +234,24 @@ class TumorDetectionApp {
         if (appState.isUploading) return;
         
         appState.isUploading = true;
-        this.showLoading(true);
         this.showProgressBar(true);
-    
-    const formData = new FormData();
-    formData.append('file', file);
-    
+
+        const formData = new FormData();
+        formData.append('file', file);
+        
         try {
             const response = await fetch('/upload', {
-        method: 'POST',
-        body: formData
+                method: 'POST',
+                body: formData
             });
             
             const data = await response.json();
             
-        if (data.success) {
+            if (data.success) {
                 this.displayResults(data);
                 this.updateHistory();
                 this.showToast('MRI scan analyzed successfully!', 'success');
-        } else {
+            } else {
                 this.showToast(data.error || 'An error occurred during analysis.', 'error');
                 this.resetUpload();
             }
@@ -250,23 +261,27 @@ class TumorDetectionApp {
             this.resetUpload();
         } finally {
             appState.isUploading = false;
-            this.showLoading(false);
             this.showProgressBar(false);
         }
     }
 
     displayResults(data) {
-    // Set preview image
+        // Set preview image
         if (elements.previewImage) {
             elements.previewImage.src = data.filepath;
         }
-    
-    // Set result title and confidence
+
+        // Show and set result title and confidence (ensure they're visible for new results)
         if (elements.resultTitle) {
+            elements.resultTitle.style.display = 'block';
             elements.resultTitle.textContent = data.result;
         }
         if (elements.confidenceText) {
+            elements.confidenceText.style.display = 'inline';
             elements.confidenceText.textContent = `${data.confidence.toFixed(1)}% confidence`;
+        }
+        if (elements.confidenceBadge) {
+            elements.confidenceBadge.style.display = 'inline-block';
         }
         
         // Set confidence badge styling
@@ -287,14 +302,8 @@ class TumorDetectionApp {
         if (!elements.confidenceBadge) return;
         
         const styles = {
-            healthy: {
-                background: 'var(--color-success-500)',
-                border: '1px solid var(--color-success-100)'
-            },
-            tumor: {
-                background: 'var(--color-error-500)',
-                border: '1px solid var(--color-error-100)'
-            }
+            healthy: { background: 'var(--color-success)' },
+            tumor: { background: 'var(--color-error)' }
         };
         
         const style = styles[resultType] || styles.tumor;
@@ -305,29 +314,28 @@ class TumorDetectionApp {
         if (!elements.probabilityBars) return;
         
         elements.probabilityBars.innerHTML = '';
-    
-    // Sort probabilities in descending order
-    const sortedProbs = Object.entries(probabilities)
-        .sort(([,a], [,b]) => b - a);
-    
+
+        // Sort probabilities in descending order
+        const sortedProbs = Object.entries(probabilities).sort(([,a], [,b]) => b - a);
+        
         const fragment = document.createDocumentFragment();
-    
-    sortedProbs.forEach(([className, probability]) => {
+
+        sortedProbs.forEach(([className, probability]) => {
             const probabilityItem = this.createProbabilityItem(className, probability);
             fragment.appendChild(probabilityItem);
         });
         
         elements.probabilityBars.appendChild(fragment);
         
-        // Animate bars
-        requestAnimationFrame(() => {
+        // Animate bars with a slight delay
+        setTimeout(() => {
             sortedProbs.forEach(([, probability], index) => {
                 const fill = elements.probabilityBars.children[index]?.querySelector('.probability-fill');
                 if (fill) {
                     fill.style.width = `${probability}%`;
                 }
             });
-        });
+        }, 100);
     }
 
     createProbabilityItem(className, probability) {
@@ -373,15 +381,40 @@ class TumorDetectionApp {
         historyItem.className = 'history-item';
         
         const filename = appState.selectedFile?.name || 'Recent scan';
-        const timestamp = new Date().toLocaleString();
+        const timestamp = this.formatTimestamp(new Date());
         
+        // Parse result to get tumor detection status and type
+        let detectionStatus, tumorType, tumorClass;
+        
+        if (result.result_type === 'healthy') {
+            detectionStatus = 'No Tumor';
+            tumorType = null;
+            tumorClass = 'healthy';
+        } else {
+            detectionStatus = 'Tumor Detected';
+            // Extract tumor type from result
+            if (result.result.toLowerCase().includes('pituitary')) {
+                tumorType = 'Pituitary';
+                tumorClass = 'pituitary';
+            } else if (result.result.toLowerCase().includes('glioma')) {
+                tumorType = 'Glioma';
+                tumorClass = 'glioma';
+            } else if (result.result.toLowerCase().includes('meningioma')) {
+                tumorType = 'Meningioma';
+                tumorClass = 'meningioma';
+            }
+        }
+
         historyItem.innerHTML = `
             <div class="history-image">
                 <img src="${result.filepath}" alt="MRI scan" loading="lazy">
             </div>
             <div class="history-details">
                 <div class="history-filename">${filename}</div>
-                <div class="history-result ${result.result_type}">${result.result}</div>
+                <div class="history-results-container">
+                    <div class="history-result ${result.result_type}">${detectionStatus}</div>
+                    ${tumorType ? `<div class="history-tumor-type ${tumorClass}">${tumorType}</div>` : ''}
+                </div>
                 <div class="history-meta">
                     <span class="history-time">${timestamp}</span>
                     <span class="history-confidence">${result.confidence.toFixed(1)}% confidence</span>
@@ -396,29 +429,50 @@ class TumorDetectionApp {
         return historyItem;
     }
 
+    formatTimestamp(date) {
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        const dayName = days[date.getDay()];
+        const day = date.getDate();
+        const monthName = months[date.getMonth()];
+        
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        
+        hours = hours % 12;
+        hours = hours ? hours : 12; // 0 should be 12
+        
+        // Format: "Sun 21 Jul, 11:26 PM"
+        return `${dayName} ${day} ${monthName}, ${hours}:${minutes} ${ampm}`;
+    }
+
     showHistoryItem(imagePath, result, resultType, confidence, filename) {
         // Set preview image
         if (elements.previewImage) {
             elements.previewImage.src = imagePath;
         }
         
-        // Set result title and confidence
+        // Hide the regular result header since we'll show centered version
         if (elements.resultTitle) {
-            elements.resultTitle.textContent = result;
+            elements.resultTitle.style.display = 'none';
         }
         if (elements.confidenceText) {
-            elements.confidenceText.textContent = `${confidence.toFixed(1)}% confidence`;
+            elements.confidenceText.style.display = 'none';
+        }
+        if (elements.confidenceBadge) {
+            elements.confidenceBadge.style.display = 'none';
         }
         
-        // Update confidence badge
-        this.updateConfidenceBadge(resultType);
-        
-        // Show historical message for probability bars
+        // Create centered historical result display
         if (elements.probabilityBars) {
             elements.probabilityBars.innerHTML = `
-                <p style="color: var(--color-gray-500); font-style: italic; text-align: center; padding: var(--spacing-5);">
-                    Historical result - detailed probabilities not available.
-                </p>
+                <div class="historical-result-display">
+                    <div class="historical-result-title">${result}</div>
+                    <div class="historical-confidence-badge ${resultType}">${confidence.toFixed(1)}% confidence</div>
+                </div>
             `;
         }
         
@@ -436,20 +490,16 @@ class TumorDetectionApp {
     }
 
     // ===== UI FEEDBACK =====
-    showLoading(show) {
-        this.toggleDisplay(elements.loadingOverlay, show);
-    }
-
     showProgressBar(show) {
         this.toggleDisplay(elements.progressBar, show);
         
         if (show && elements.progressBar) {
             const progressFill = elements.progressBar.querySelector('.progress-fill');
             if (progressFill) {
-        progressFill.style.width = '0%';
-                requestAnimationFrame(() => {
-            progressFill.style.width = '100%';
-                });
+                progressFill.style.width = '0%';
+                setTimeout(() => {
+                    progressFill.style.width = '100%';
+                }, 50);
             }
         }
     }
@@ -459,96 +509,43 @@ class TumorDetectionApp {
         
         const toastIcon = elements.toast.querySelector('.toast-icon');
         const toastMessage = elements.toast.querySelector('.toast-message');
-    
-    // Set message
+
+        // Set message
         if (toastMessage) {
-    toastMessage.textContent = message;
+            toastMessage.textContent = message;
         }
-    
-    // Set icon and class based on type
+
+        // Set icon and class based on type
         elements.toast.className = `toast ${type}`;
         if (toastIcon) {
             toastIcon.className = type === 'success' ? 
                 'toast-icon fas fa-check-circle' : 
                 'toast-icon fas fa-exclamation-circle';
-    }
-    
-    // Show toast
+        }
+
+        // Show toast
         elements.toast.classList.add('show');
-    
+
         // Hide after configured duration
-    setTimeout(() => {
+        setTimeout(() => {
             elements.toast.classList.remove('show');
         }, CONFIG.toastDuration);
     }
 
     // ===== EVENT HANDLERS =====
     handleKeyboardShortcuts(event) {
-    // ESC key to reset upload
+        // ESC key to reset upload
         if (event.key === 'Escape' && appState.selectedFile && !appState.isUploading) {
             this.resetUpload();
-    }
-    
-    // Ctrl/Cmd + O to open file dialog
-    if ((event.ctrlKey || event.metaKey) && event.key === 'o') {
-        event.preventDefault();
+        }
+
+        // Ctrl/Cmd + O to open file dialog
+        if ((event.ctrlKey || event.metaKey) && event.key === 'o') {
+            event.preventDefault();
             if (!appState.selectedFile) {
                 elements.fileInput?.click();
             }
         }
-    }
-
-    handleResize() {
-        // Handle responsive adjustments if needed
-        // This method can be extended for specific responsive behavior
-    }
-
-    // ===== ACCESSIBILITY & ENHANCEMENTS =====
-    initializeEnhancements() {
-        // Add smooth scrolling
-    document.documentElement.style.scrollBehavior = 'smooth';
-    
-    // Add focus management for accessibility
-        this.setupFocusManagement();
-        
-        // Initialize tooltips or other enhancements if needed
-        this.setupAccessibilityFeatures();
-    }
-
-    setupFocusManagement() {
-    const focusableElements = document.querySelectorAll('button, input, [tabindex]');
-        
-    focusableElements.forEach(el => {
-        el.addEventListener('focus', function() {
-                this.style.outline = '2px solid var(--color-primary-500)';
-            this.style.outlineOffset = '2px';
-        });
-        
-        el.addEventListener('blur', function() {
-            this.style.outline = 'none';
-        });
-    });
-}
-
-    setupAccessibilityFeatures() {
-        // Add ARIA labels and descriptions where needed
-        if (elements.uploadArea) {
-            elements.uploadArea.setAttribute('aria-label', 'Upload MRI image for analysis');
-            elements.uploadArea.setAttribute('role', 'button');
-            elements.uploadArea.setAttribute('tabindex', '0');
-        }
-        
-        if (elements.fileInput) {
-            elements.fileInput.setAttribute('aria-describedby', 'file-upload-help');
-        }
-        
-        // Add keyboard navigation for upload area
-        elements.uploadArea?.addEventListener('keydown', (event) => {
-            if (event.key === 'Enter' || event.key === ' ') {
-                event.preventDefault();
-                this.handleUploadAreaClick();
-            }
-        });
     }
 }
 
@@ -564,13 +561,23 @@ const utils = {
 
     formatTimestamp(timestamp) {
         const date = new Date(timestamp);
-        return date.toLocaleDateString() + ' ' + date.toLocaleTimeString();
-    },
-
-    preloadImage(src) {
-        const img = new Image();
-        img.src = src;
-        return img;
+        const days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+        const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 
+                       'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+        
+        const dayName = days[date.getDay()];
+        const day = date.getDate();
+        const monthName = months[date.getMonth()];
+        
+        let hours = date.getHours();
+        const minutes = date.getMinutes().toString().padStart(2, '0');
+        const ampm = hours >= 12 ? 'PM' : 'AM';
+        
+        hours = hours % 12;
+        hours = hours ? hours : 12; // 0 should be 12
+        
+        // Format: "Sun 21 Jul, 11:26 PM"
+        return `${dayName} ${day} ${monthName}, ${hours}:${minutes} ${ampm}`;
     },
 
     debounce(func, wait) {

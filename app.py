@@ -143,7 +143,7 @@ def upload_file():
             history_item = {
                 "filename": file.filename,
                 "filepath": unique_filename,
-                "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+                "timestamp": datetime.now().strftime("%a %d %b, %I:%M %p"),
                 "result": prediction["result"],
                 "result_type": prediction["result_type"],
                 "confidence": prediction["confidence"],
@@ -198,7 +198,7 @@ if __name__ == "__main__":
     # Load model at startup to catch errors early
     try:
         load_prediction_model()
-        app.run(debug=True, host="0.0.0.0", port=5000)
+        app.run(debug=True, host="0.0.0.0", port=5555)
     except RuntimeError as e:
         print(f"Failed to start application: {e}")
         exit(1)

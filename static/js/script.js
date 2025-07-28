@@ -207,9 +207,15 @@ class TumorDetectionApp {
             elements.confidenceBadge.style.display = 'inline-block';
         }
         
+        // Reset upload section to initial state
         this.toggleDisplay(elements.fileInfo, false);
         this.toggleDisplay(elements.uploadArea, true);
         this.toggleDisplay(elements.analysisResults, false);
+        
+        // Ensure upload section is properly displayed
+        if (elements.uploadSection) {
+            elements.uploadSection.style.display = 'flex';
+        }
     }
 
     async resetAPI() {
@@ -410,15 +416,17 @@ class TumorDetectionApp {
                 <img src="${result.filepath}" alt="MRI scan" loading="lazy">
             </div>
             <div class="history-details">
-                <div class="history-filename">${filename}</div>
-                <div class="history-results-container">
-                    <div class="history-result ${result.result_type}">${detectionStatus}</div>
-                    ${tumorType ? `<div class="history-tumor-type ${tumorClass}">${tumorType}</div>` : ''}
+                <div class="history-top-content">
+                    <div class="history-filename">${filename}</div>
+                    <div class="history-results-container">
+                        <div class="history-result ${result.result_type}">${detectionStatus}</div>
+                        ${tumorType ? `<div class="history-tumor-type ${tumorClass}">${tumorType}</div>` : ''}
+                    </div>
                 </div>
-                <div class="history-meta">
-                    <span class="history-time">${timestamp}</span>
-                    <span class="history-confidence">${result.confidence.toFixed(1)}% confidence</span>
-                </div>
+            </div>
+            <div class="history-meta">
+                <span class="history-time">${timestamp}</span>
+                <span class="history-confidence">${result.confidence.toFixed(1)}% confidence</span>
             </div>
         `;
         
@@ -486,6 +494,22 @@ class TumorDetectionApp {
     scanAnother() {
         this.clearState();
         this.toggleDisplay(elements.uploadSection, true);
+        
+        // Ensure upload section has proper layout
+        if (elements.uploadSection) {
+            elements.uploadSection.style.display = 'flex';
+            elements.uploadSection.style.flexDirection = 'column';
+            elements.uploadSection.style.height = '100%';
+        }
+        
+        // Reset upload area to initial state
+        if (elements.uploadArea) {
+            elements.uploadArea.style.display = 'flex';
+            elements.uploadArea.style.alignItems = 'center';
+            elements.uploadArea.style.justifyContent = 'center';
+            elements.uploadArea.style.height = '100%';
+        }
+        
         this.showToast('Ready for new scan', 'success');
     }
 

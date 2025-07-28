@@ -157,33 +157,6 @@
                     </div>
                 </section>
 
-                <!-- Project Information -->
-                <aside class="about-project" role="complementary" aria-labelledby="project-info">
-                    <h3 id="project-info" class="sr-only">Project Information</h3>
-                    <div class="project-stats" role="list" aria-label="Project statistics">
-                        <div class="stat-item" role="listitem">
-                            <i class="fas fa-bullseye" aria-hidden="true"></i>
-                            <span>93% Accuracy</span>
-                        </div>
-                        <div class="stat-item" role="listitem">
-                            <i class="fas fa-images" aria-hidden="true"></i>
-                            <span>13,006 Images</span>
-                        </div>
-                        <div class="stat-item" role="listitem">
-                            <i class="fas fa-brain" aria-hidden="true"></i>
-                            <span>VGG16 Model</span>
-                        </div>
-                        <div class="stat-item" role="listitem">
-                            <i class="fab fa-github" aria-hidden="true"></i>
-                            <a href="https://github.com/ShrekBytes/tui_mor" 
-                               target="_blank" 
-                               rel="noopener noreferrer"
-                               aria-label="View source code on GitHub">
-                                GitHub Repository
-                            </a>
-                        </div>
-                    </div>
-                </aside>
             </main>
 
             <!-- History Sidebar -->
@@ -217,32 +190,34 @@
                                      loading="lazy">
                             </div>
                             <div class="history-details">
-                                <div class="history-filename" title="{{ item.filename }}">
-                                    {{ item.filename }}
-                                </div>
-                                <div class="history-results-container">
-                                    {% if item.result_type == 'healthy' %}
-                                        <div class="history-result {{ item.result_type }}" role="status">No Tumor</div>
-                                    {% else %}
-                                        <div class="history-result {{ item.result_type }}" role="status">Tumor Detected</div>
-                                        {% if 'pituitary' in item.result.lower() %}
-                                            <div class="history-tumor-type pituitary">Pituitary</div>
-                                        {% elif 'glioma' in item.result.lower() %}
-                                            <div class="history-tumor-type glioma">Glioma</div>
-                                        {% elif 'meningioma' in item.result.lower() %}
-                                            <div class="history-tumor-type meningioma">Meningioma</div>
+                                <div class="history-top-content">
+                                    <div class="history-filename" title="{{ item.filename }}">
+                                        {{ item.filename }}
+                                    </div>
+                                    <div class="history-results-container">
+                                        {% if item.result_type == 'healthy' %}
+                                            <div class="history-result {{ item.result_type }}" role="status">No Tumor</div>
+                                        {% else %}
+                                            <div class="history-result {{ item.result_type }}" role="status">Tumor Detected</div>
+                                            {% if 'pituitary' in item.result.lower() %}
+                                                <div class="history-tumor-type pituitary">Pituitary</div>
+                                            {% elif 'glioma' in item.result.lower() %}
+                                                <div class="history-tumor-type glioma">Glioma</div>
+                                            {% elif 'meningioma' in item.result.lower() %}
+                                                <div class="history-tumor-type meningioma">Meningioma</div>
+                                            {% endif %}
                                         {% endif %}
-                                    {% endif %}
+                                    </div>
                                 </div>
-                                <div class="history-meta">
-                                    <time class="history-time" 
-                                          datetime="{{ item.timestamp }}">
-                                        {{ item.timestamp }}
-                                    </time>
-                                    <span class="history-confidence">
-                                        {{ "%.1f"|format(item.confidence) }}% confidence
-                                    </span>
-                                </div>
+                            </div>
+                            <div class="history-meta">
+                                <time class="history-time" 
+                                      datetime="{{ item.timestamp }}">
+                                    {{ item.timestamp }}
+                                </time>
+                                <span class="history-confidence">
+                                    {{ "%.1f"|format(item.confidence) }}% confidence
+                                </span>
                             </div>
                         </div>
                         {% endfor %}
@@ -252,6 +227,34 @@
                             <p>No recent scans available</p>
                         </div>
                     {% endif %}
+                </div>
+            </aside>
+
+            <!-- Project Information -->
+            <aside class="about-project" role="complementary" aria-labelledby="project-info">
+                <h3 id="project-info" class="sr-only">Project Information</h3>
+                <div class="project-stats" role="list" aria-label="Project statistics">
+                    <div class="stat-item" role="listitem">
+                        <i class="fas fa-bullseye" aria-hidden="true"></i>
+                        <span>93% Accuracy</span>
+                    </div>
+                    <div class="stat-item" role="listitem">
+                        <i class="fas fa-images" aria-hidden="true"></i>
+                        <span>13,006 Images</span>
+                    </div>
+                    <div class="stat-item" role="listitem">
+                        <i class="fas fa-brain" aria-hidden="true"></i>
+                        <span>VGG16 Model</span>
+                    </div>
+                    <div class="stat-item" role="listitem">
+                        <i class="fab fa-github" aria-hidden="true"></i>
+                        <a href="https://github.com/ShrekBytes/tui_mor" 
+                           target="_blank" 
+                           rel="noopener noreferrer"
+                           aria-label="View source code on GitHub">
+                            GitHub Repository
+                        </a>
+                    </div>
                 </div>
             </aside>
         </div>

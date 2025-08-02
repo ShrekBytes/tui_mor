@@ -7,26 +7,27 @@ A Flask-based web application that uses a trained deep learning model to detect 
 ## 📁 Folder Structure
 
 ```
-
 project-root/
 │
 ├── static/
 ├── templates/
-├── model.h5                # Trained Keras model (downloaded separately)
+├── model.h5                # Trained Keras model (included in repo)
+├── label_map.json          # Class labels mapping (included in repo)
 ├── app.py                  # Main Flask app
 ├── requirements.txt
 └── README.md
-
-````
+```
 
 <br>
 
 ## 🚀 Usage Guide
 
-### 1️⃣ Download the Model
+### 1️⃣ Clone the Repository
 
-📥 [Download `model.h5`](https://drive.google.com/file/d/1_KAIOS3zkoMWtj2P1xmB65qUsI2hsqxR/view?usp=sharing)  
-Place it in the root directory of the project (same level as `app.py`).
+```bash
+git clone https://github.com/ShrekBytes/tui_mor.git
+cd tui_mor
+```
 
 <br>
 
@@ -35,7 +36,7 @@ Place it in the root directory of the project (same level as `app.py`).
 ```bash
 python -m venv .venv
 source .venv/bin/activate  # On Windows: .venv\Scripts\activate
-````
+```
 
 <br>
 
@@ -63,10 +64,11 @@ http://127.0.0.1:5555
 
 ## 🧪 Features
 
-* Upload an MRI image
-* Predict tumor type: `glioma`, `meningioma`, `pituitary`, or `no tumor`
-* Display confidence score
-* View image with result overlay
+- Upload an MRI image
+- Predict tumor type: `glioma`, `meningioma`, `pituitary`, or `no tumor`
+- Display confidence score
+- View image with result overlay
+- JSON-based label mapping for easy customization
 
 <br>
 

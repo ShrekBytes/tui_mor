@@ -4,6 +4,7 @@ from keras.preprocessing.image import load_img, img_to_array
 import numpy as np
 import os
 import uuid
+import json
 from datetime import datetime
 
 app = Flask(__name__)
@@ -19,8 +20,22 @@ ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "bmp", "tiff"}
 # Create necessary directories
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
-# Class labels
-CLASS_LABELS = ["pituitary", "glioma", "notumor", "meningioma"]
+
+# Load label map from JSON file
+def load_label_map():
+    """Load class labels from JSON file."""
+    try:
+        with open("label_map.json", "r") as f:
+            class_labels = json.load(f)
+        print(f"Label map loaded successfully: {class_labels}")
+        return class_labels
+    except Exception as e:
+        print(f"Error loading label map: {e}")
+        # Fallback to default labels if JSON loading fails
+        return ["glioma", "meningioma", "notumor", "pituitary"]
+
+
+CLASS_LABELS = load_label_map()
 
 # Global model variable
 model = None
@@ -59,8 +74,35 @@ def add_to_history(history_item):
     session.modified = True
 
 
+def detect_and_predict(img_path, model, image_size=128):
+    """Detect tumor using the provided detection function structure."""
+    try:
+        img = load_img(img_path, target_size=(image_size, image_size))
+        img_array = img_to_array(img) / 255.0
+        img_array = np.expand_dims(img_array, axis=0)
+
+        predictions = model.predict(img_array)
+        predicted_class_index = np.argmax(predictions, axis=1)[0]
+        confidence_score = np.max(predictions, axis=1)[0]
+        predicted_label = CLASS_LABELS[predicted_class_index]
+
+        result = (
+            "No Tumor" if predicted_label == "notumor" else f"Tumor: {predicted_label}"
+        )
+
+        return {
+            "success": True,
+            "result": result,
+            "predicted_label": predicted_label,
+            "confidence": float(confidence_score * 100),
+        }
+
+    except Exception as e:
+        return {"success": False, "error": f"Error processing the image: {str(e)}"}
+
+
 def predict_tumor(img_path):
-    """Detect tumor and return prediction results."""
+    """Detect tumor and return prediction results using JSON label map."""
     try:
         # Load and preprocess the image
         img = load_img(img_path, target_size=(IMAGE_SIZE, IMAGE_SIZE))
@@ -72,6 +114,7 @@ def predict_tumor(img_path):
         predictions = prediction_model.predict(img_array)
         predicted_class_index = np.argmax(predictions, axis=1)[0]
         confidence_score = np.max(predictions, axis=1)[0]
+        predicted_label = CLASS_LABELS[predicted_class_index]
 
         # Get all class probabilities
         class_probabilities = {
@@ -79,20 +122,19 @@ def predict_tumor(img_path):
             for i, label in enumerate(CLASS_LABELS)
         }
 
-        # Determine the result
-        predicted_class = CLASS_LABELS[predicted_class_index]
-        if predicted_class == "notumor":
-            result = "No Tumor Detected"
+        # Determine the result using the new logic
+        if predicted_label == "notumor":
+            result = "No Tumor"
             result_type = "healthy"
         else:
-            result = f"Tumor Detected: {predicted_class.title()}"
+            result = f"Tumor: {predicted_label}"
             result_type = "tumor"
 
         return {
             "success": True,
             "result": result,
             "result_type": result_type,
-            "predicted_class": predicted_class,
+            "predicted_class": predicted_label,
             "confidence": float(confidence_score * 100),
             "class_probabilities": class_probabilities,
         }

@@ -67,7 +67,9 @@ http://127.0.0.1:5555
 - Upload an MRI image
 - Predict tumor type: `glioma`, `meningioma`, `pituitary`, or `no tumor`
 - Display confidence score
-- Recent Scan History
+- View image with result overlay
+- Privacy focused (does not store any data, scan histories are stored on browser session)
+- JSON-based label mapping for easy customization
 
 <br>
 

@@ -5,10 +5,21 @@ import numpy as np
 import os
 import uuid
 import json
+import logging
 from datetime import datetime
+import glob
 
 app = Flask(__name__)
+# Production configuration
 app.secret_key = os.environ.get("SECRET_KEY", "dev-key-change-in-production")
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") == "production"
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+# Configure logging for production
+if os.environ.get("FLASK_ENV") == "production":
+    logging.basicConfig(level=logging.INFO)
+    app.logger.setLevel(logging.INFO)
 
 # Configuration
 UPLOAD_FOLDER = "static/uploads"
@@ -16,9 +27,38 @@ MODEL_PATH = "model.h5"
 IMAGE_SIZE = 128
 MAX_HISTORY_ITEMS = 10
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "bmp", "tiff"}
+MAX_IMAGES = 50
+KEEP_IMAGES = 30
 
 # Create necessary directories
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+def cleanup_old_images():
+    """Silently cleanup old images when count exceeds MAX_IMAGES."""
+    try:
+        # Get all image files in uploads folder
+        image_files = []
+        for ext in ALLOWED_EXTENSIONS:
+            image_files.extend(glob.glob(os.path.join(UPLOAD_FOLDER, f"*.{ext}")))
+            image_files.extend(
+                glob.glob(os.path.join(UPLOAD_FOLDER, f"*.{ext.upper()}"))
+            )
+
+        # If we have more than MAX_IMAGES, remove oldest files
+        if len(image_files) > MAX_IMAGES:
+            # Sort by modification time (oldest first)
+            image_files.sort(key=lambda x: os.path.getmtime(x))
+
+            # Remove oldest files, keeping only KEEP_IMAGES
+            files_to_remove = image_files[:-KEEP_IMAGES]
+            for file_path in files_to_remove:
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    pass  # Silently ignore if file doesn't exist or can't be removed
+    except Exception:
+        pass  # Silently ignore any cleanup errors
 
 
 # Load label map from JSON file
@@ -27,10 +67,10 @@ def load_label_map():
     try:
         with open("label_map.json", "r") as f:
             class_labels = json.load(f)
-        print(f"Label map loaded successfully: {class_labels}")
+        app.logger.info(f"Label map loaded successfully: {class_labels}")
         return class_labels
     except Exception as e:
-        print(f"Error loading label map: {e}")
+        app.logger.error(f"Error loading label map: {e}")
         # Fallback to default labels if JSON loading fails
         return ["glioma", "meningioma", "notumor", "pituitary"]
 
@@ -47,9 +87,9 @@ def load_prediction_model():
     if model is None:
         try:
             model = load_model(MODEL_PATH)
-            print(f"Model loaded successfully from {MODEL_PATH}")
+            app.logger.info(f"Model loaded successfully from {MODEL_PATH}")
         except Exception as e:
-            print(f"Error loading model: {e}")
+            app.logger.error(f"Error loading model: {e}")
             raise RuntimeError(f"Failed to load model from {MODEL_PATH}: {e}")
     return model
 
@@ -177,6 +217,9 @@ def upload_file():
         # Save file
         file.save(filepath)
 
+        # Cleanup old images silently
+        cleanup_old_images()
+
         # Make prediction
         prediction = predict_tumor(filepath)
 
@@ -240,8 +283,10 @@ if __name__ == "__main__":
     # Load model at startup to catch errors early
     try:
         load_prediction_model()
-        port = int(os.environ.get("PORT", 5555))  # 5555 for local dev
-        app.run(debug=True, host="0.0.0.0", port=port)
+        # Get port from environment variable or use default
+        port = int(os.environ.get("PORT", 5555))
+        app.logger.info(f"Starting application on port {port}")
+        app.run(debug=False, host="0.0.0.0", port=port)
     except RuntimeError as e:
-        print(f"Failed to start application: {e}")
+        app.logger.error(f"Failed to start application: {e}")
         exit(1)

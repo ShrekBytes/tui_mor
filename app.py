@@ -5,10 +5,20 @@ import numpy as np
 import os
 import uuid
 import json
+import logging
 from datetime import datetime
 
 app = Flask(__name__)
+# Production configuration
 app.secret_key = os.environ.get("SECRET_KEY", "dev-key-change-in-production")
+app.config["SESSION_COOKIE_SECURE"] = os.environ.get("FLASK_ENV") == "production"
+app.config["SESSION_COOKIE_HTTPONLY"] = True
+app.config["SESSION_COOKIE_SAMESITE"] = "Lax"
+
+# Configure logging for production
+if os.environ.get("FLASK_ENV") == "production":
+    logging.basicConfig(level=logging.INFO)
+    app.logger.setLevel(logging.INFO)
 
 # Configuration
 UPLOAD_FOLDER = "static/uploads"
@@ -27,10 +37,10 @@ def load_label_map():
     try:
         with open("label_map.json", "r") as f:
             class_labels = json.load(f)
-        print(f"Label map loaded successfully: {class_labels}")
+        app.logger.info(f"Label map loaded successfully: {class_labels}")
         return class_labels
     except Exception as e:
-        print(f"Error loading label map: {e}")
+        app.logger.error(f"Error loading label map: {e}")
         # Fallback to default labels if JSON loading fails
         return ["glioma", "meningioma", "notumor", "pituitary"]
 
@@ -47,9 +57,9 @@ def load_prediction_model():
     if model is None:
         try:
             model = load_model(MODEL_PATH)
-            print(f"Model loaded successfully from {MODEL_PATH}")
+            app.logger.info(f"Model loaded successfully from {MODEL_PATH}")
         except Exception as e:
-            print(f"Error loading model: {e}")
+            app.logger.error(f"Error loading model: {e}")
             raise RuntimeError(f"Failed to load model from {MODEL_PATH}: {e}")
     return model
 
@@ -242,7 +252,8 @@ if __name__ == "__main__":
         load_prediction_model()
         # Get port from environment variable or use default
         port = int(os.environ.get("PORT", 5555))
+        app.logger.info(f"Starting application on port {port}")
         app.run(debug=False, host="0.0.0.0", port=port)
     except RuntimeError as e:
-        print(f"Failed to start application: {e}")
+        app.logger.error(f"Failed to start application: {e}")
         exit(1)

@@ -75,10 +75,10 @@ http://127.0.0.1:5555
 
 ## 📸 Screenshots
 
-<img src="screenshots/1.png" width="95%" />
-<img src="screenshots/2.png" width="95%" />
-<img src="screenshots/3.png" width="95%" />
-<img src="screenshots/4.png" width="95%" />
+<img src="screenshots/1.png" width="50%" />
+<img src="screenshots/2.png" width="50%" />
+<img src="screenshots/3.png" width="50%" />
+<img src="screenshots/4.png" width="50%" />
 <p align="center">
   <img src="screenshots/5.png" height="789px" />
   <img src="screenshots/6.png" height="789px" />

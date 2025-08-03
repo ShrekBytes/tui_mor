@@ -11,8 +11,8 @@ project-root/
 │
 ├── static/
 ├── templates/
-├── model.h5                # Trained Keras model
-├── label_map.json
+├── model.h5                # Trained Keras model (included in repo)
+├── label_map.json          # Class labels mapping (included in repo)
 ├── app.py                  # Main Flask app
 ├── requirements.txt
 └── README.md
@@ -67,15 +67,16 @@ http://127.0.0.1:5555
 - Upload an MRI image
 - Predict tumor type: `glioma`, `meningioma`, `pituitary`, or `no tumor`
 - Display confidence score
-- Recent Scan History
+- View image with result overlay
+- JSON-based label mapping for easy customization
 
 <br>
 
 ## 📸 Screenshots
 
-<img src="screenshots/1.png" width="95%" />
-<img src="screenshots/2.png" width="95%" />
-<img src="screenshots/3.png" width="95%" />
+<img src="screenshots/1.png" width="85%" />
+<img src="screenshots/2.png" width="85%" />
+<img src="screenshots/3.png" width="85%" />
 
 <br>
 

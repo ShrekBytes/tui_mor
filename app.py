@@ -240,8 +240,9 @@ if __name__ == "__main__":
     # Load model at startup to catch errors early
     try:
         load_prediction_model()
-        port = int(os.environ.get("PORT", 5555))  # 5555 for local dev
-        app.run(debug=True, host="0.0.0.0", port=port)
+        # Get port from environment variable or use default
+        port = int(os.environ.get("PORT", 5555))
+        app.run(debug=False, host="0.0.0.0", port=port)
     except RuntimeError as e:
         print(f"Failed to start application: {e}")
         exit(1)

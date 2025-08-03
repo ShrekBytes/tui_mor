@@ -7,6 +7,7 @@ import uuid
 import json
 import logging
 from datetime import datetime
+import glob
 
 app = Flask(__name__)
 # Production configuration
@@ -26,9 +27,38 @@ MODEL_PATH = "model.h5"
 IMAGE_SIZE = 128
 MAX_HISTORY_ITEMS = 10
 ALLOWED_EXTENSIONS = {"png", "jpg", "jpeg", "gif", "bmp", "tiff"}
+MAX_IMAGES = 50
+KEEP_IMAGES = 30
 
 # Create necessary directories
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+
+def cleanup_old_images():
+    """Silently cleanup old images when count exceeds MAX_IMAGES."""
+    try:
+        # Get all image files in uploads folder
+        image_files = []
+        for ext in ALLOWED_EXTENSIONS:
+            image_files.extend(glob.glob(os.path.join(UPLOAD_FOLDER, f"*.{ext}")))
+            image_files.extend(
+                glob.glob(os.path.join(UPLOAD_FOLDER, f"*.{ext.upper()}"))
+            )
+
+        # If we have more than MAX_IMAGES, remove oldest files
+        if len(image_files) > MAX_IMAGES:
+            # Sort by modification time (oldest first)
+            image_files.sort(key=lambda x: os.path.getmtime(x))
+
+            # Remove oldest files, keeping only KEEP_IMAGES
+            files_to_remove = image_files[:-KEEP_IMAGES]
+            for file_path in files_to_remove:
+                try:
+                    os.remove(file_path)
+                except OSError:
+                    pass  # Silently ignore if file doesn't exist or can't be removed
+    except Exception:
+        pass  # Silently ignore any cleanup errors
 
 
 # Load label map from JSON file
@@ -186,6 +216,9 @@ def upload_file():
 
         # Save file
         file.save(filepath)
+
+        # Cleanup old images silently
+        cleanup_old_images()
 
         # Make prediction
         prediction = predict_tumor(filepath)
